@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  template:
+    metadata:
+      labels: 
+        app: {{ .Values.app.name }}
+    spec:
+      containers:
+        - name: web
+          image: {{ .Values.app.container.image }}
+          ports: 
+            - containerPort: {{ .Values.app.container.port }}
+          env:
+            - name: WASHOUT_COEFF   # washout coefficient (default 0.08)
+              value: "0.08"
+            - name: WAQI_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.app.name }}-esos
+                  key: {{ .Values.app.secret.secretKey }}
+
+          resources:
+            limits:
+              cpu: {{ .Values.app.cpu }}
+              memory: {{ .Values.app.memory }}
